@@ -1,0 +1,7 @@
+go to iam and add permission of administrative access
+
+go to policies -> choose services (assign read for dynamodb) and all resouces allowed
+
+go to lambda->make function naming it fetch
+
+go to roles -> select fetching role you made -> add permission -> attach policy ->attach your policy made in step 1
