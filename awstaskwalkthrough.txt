@@ -5,3 +5,22 @@ go to policies -> choose services (assign read for dynamodb) and all resouces al
 go to lambda->make function naming it fetch
 
 go to roles -> select fetching role you made -> add permission -> attach policy ->attach your policy made in step 1
+
+
+
+https://www.tutorialspoint.com/aws_lambda/aws_lambda_using_lambda_function_with_amazon_dynamodb.htm#:~:text=Using%20Lambda%20Function%20with%20Amazon%20DynamoDB%20Advertisements%20Previous,data%20and%20send%20mail%20with%20the%20data%20added.
+
+
+Stack contains resources that are defined in yaml files (ec2, s3 etc). 
+The output would be lamddafunction name, arn, function arn, so it can be used somewhere else as well.
+
+
+UPCOMING TASK:
+-Access givre by role (role make sure if i am capable of doing that)
+var awssdk = require('aws-sdk') # avialable by default we don't need to package it in this dynamodb file
+-aws sdk -->    dynamodb.getitem
+-SES is an aws built in service used to send email
+-call it in dynamodb fetch lamdba (call lamda using existing lambda through SNS(notification service))
+-give sns permission as well
+-Exsting  lambda will call another lamda using sns and second lambda will give email using ses
+
