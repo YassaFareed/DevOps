@@ -24,3 +24,27 @@ var awssdk = require('aws-sdk') # avialable by default we don't need to package 
 -give sns permission as well
 -Exsting  lambda will call another lamda using sns and second lambda will give email using ses
 
+
+=========Assignment1=========
+
+Please find details of assignment,
+•Add one more lambda in the Cloudformation
+stack
+•New lambda should use SES service to send
+an email
+•Call this lambda from existing lambda
+through SNS
+•Provide SNS permissions to existing
+Lambda
+•Call existing lambda, you should receive
+email
+•Create an architectural diagram for the
+above flow and share the CloudFormation
+script
+
+Assignment1 useful links:
+https://iangilham.com/2016/03/22/Sns-trigger-lambda-via-cloudformation.html
+https://github.com/guardian/ses-send-email-lambda/blob/master/conf/cloudformation.yml
+https://github.com/nrdio/sns-lambda-dynamodb-cloudformation-example
+
+
