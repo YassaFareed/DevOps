@@ -4,14 +4,19 @@ Please find details of assignment,
 
 •Add one more lambda in the Cloudformation
 stack
+<br>
 •New lambda should use SES service to send
 an email
+<br>
 •Call this lambda from existing lambda
 through SNS
+<br>
 •Provide SNS permissions to existing
 Lambda
+<br>
 •Call existing lambda, you should receive
 email
+<br>
 •Create an architectural diagram for the
 above flow and share the CloudFormation
 script
