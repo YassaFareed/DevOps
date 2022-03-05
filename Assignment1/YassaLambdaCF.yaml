@@ -1,0 +1,160 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Template for Lambda Sample.
+Parameters:
+  EnvName:
+    Type: String
+    Description: Name of an environment. 'dev', 'staging', 'prod' and any name.
+    AllowedPattern: ^.*[^0-9]$
+    ConstraintDescription: Must end with non-numeric character.
+  LambdaHandlerPath:
+    Type: String
+    Description: Path of a Lambda Handler.
+    AllowedPattern: '^.*[^0-9]$'
+    ConstraintDescription: Must end with non-numeric character.
+Outputs:
+  LambdaRoleARN:
+    Description: Role for Lambda execution.
+    Value:
+      Fn::GetAtt:
+        - YassaLambdaRole
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: YassaLambdaRole
+  LambdaFunctionName:
+    Value:
+      Ref: YassaLambdaFunction
+  LambdaFunctionARN:
+    Description: Lambda function ARN.
+    Value:
+      Fn::GetAtt:
+        - YassaLambdaFunction
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: LambdaARN-${EnvName}
+  
+Resources:
+  YassaLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        'Fn::Sub': YassaLambdaRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonSESFullAccess'
+        - 'arn:aws:iam::aws:policy/AWSLambda_FullAccess'
+
+      Path: /
+
+
+  YassaLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName:
+        Fn::Sub: YassaLambdaFunction-${EnvName}
+      Description: LambdaFunction of nodejs14.x.
+      Runtime: nodejs14.x
+      Code:
+        ZipFile: |-
+          var AWS = require('aws-sdk');
+           AWS.config.region = 'us-east-1';
+           var lambda = new AWS.Lambda();
+
+          exports.handler = function(event, context) {
+           var message1 = event.Records[0].Sns.Message;
+           var message={ "name" : message1 }
+           var datapay=JSON.stringify(message)
+           var params = {
+           FunctionName: 'YassaLambdaSESfunc',
+           InvocationType: 'RequestResponse',
+           LogType: 'Tail',
+           Payload: datapay
+           };
+           lambda.invoke(params, function(err, data) {
+           if (err) {
+           context.fail(err);
+           } else {
+           context.succeed('Lambda_B said '+ data.Payload);
+           }
+           })
+           };
+      Handler: index.handler
+      MemorySize: 128
+      Timeout: 10
+      Role:
+        'Fn::GetAtt':
+          - YassaLambdaRole
+          - Arn
+      Environment:
+        Variables:
+          ENV:
+            Fn::Sub: ${EnvName}
+          TZ: UTC
+          
+  YassaLambdaSESfunc:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName:
+        'Fn::Sub': YassaLambdaSESfunc
+      Code:
+        ZipFile: |-
+          var aws = require("aws-sdk");
+           var ses = new aws.SES({ region: "us-east-1" });
+           exports.handler = async function (event) {
+           var params = {
+           Destination: {
+           ToAddresses: ["yassa.fareed99@gmail.com"],
+           },
+           Message: {
+           Body: {
+           Text: { Data: event.name },
+           },
+           Subject: { Data: "Testing" },
+           },
+           Source: "yassa.fareed99@gmail.com",
+           };
+           return ses.sendEmail(params).promise()
+           };
+      Description: Send email using SES
+      Handler: index.handler
+      MemorySize: 128
+      Role:
+        Fn::GetAtt:
+          - YassaLambdaRole
+          - Arn
+      Runtime: nodejs14.x
+      Timeout: 60
+     
+
+  Topic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+        - Endpoint:
+            Fn::GetAtt:
+              - YassaLambdaFunction
+              - Arn
+          Protocol: lambda
+    DependsOn:
+      - YassaLambdaFunction
+      
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn:
+        Ref: Topic
+      FunctionName:
+        'Fn::GetAtt':
+          - YassaLambdaFunction
+          - Arn
